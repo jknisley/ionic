@@ -1,3 +1,5 @@
+/* updated ionic-angular@2.2.0 to include patch referenced in https://github.com/driftyco/ionic/issues/9722 */
+
 import { AfterContentInit, ChangeDetectorRef, ContentChild, Directive, DoCheck, ElementRef, Input, IterableDiffers, NgZone, OnDestroy, Renderer, TrackByFn } from '@angular/core';
 
 import { adjustRendered, calcDimensions, estimateHeight, initReadNodes, processRecords, populateNodeData, updateDimensions, updateNodeContext, writeToNodes } from './virtual-util';
@@ -432,12 +434,8 @@ export class VirtualScroll implements DoCheck, AfterContentInit, OnDestroy {
   writeUpdate() {
     console.debug(`virtual-scroll, writeUpdate`);
 
-    processRecords(this._data.renderHeight,
-                   this._records,
-                   this._cells,
-                   this._hdrFn,
-                   this._ftrFn,
-                   this._data);
+    const stopAtHeight = ((this._data.scrollTop || 0) + this._data.renderHeight);
+    processRecords(stopAtHeight, this._records, this._cells, this._hdrFn, this._ftrFn, this._data);
 
     // ******** DOM WRITE ****************
     this.renderVirtual();
@@ -458,7 +456,7 @@ export class VirtualScroll implements DoCheck, AfterContentInit, OnDestroy {
     const records = this._records;
 
     // initialize nodes with the correct cell data
-    data.topCell = 0;
+    adjustRendered(cells, data);
     data.bottomCell = (cells.length - 1);
 
     populateNodeData(0, data.bottomCell,
